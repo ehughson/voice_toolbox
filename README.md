@@ -1,7 +1,7 @@
-> #Voice Toolbox
+# Voice Toolbox
 The place to solve all your audio signal processing needs. 
 
-> ##Files
+## Files
 To start: Setup a conda environment and run 'pip3 install -r requirements.txt' file before running the scripts. 
 >>Important: if you get an error with parselmouth make sure the installation is 'pip3 install praat-parselmouth'
 
