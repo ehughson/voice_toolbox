@@ -540,16 +540,7 @@ def pauses(row):
 if __name__ =='__main__':
 
     ############ analyzing data for Emma's Voice ################
-    dataframe = pd.read_csv("other/Paige_data.csv")
-    #dataframe['clean'] = dataframe.apply(cleaning, args=("paige",), axis='columns')
-    #dataframe.to_csv("other/Paige_data.csv", index = False)
-
-    
-    #dataframe = pd.read_csv("other/emma_data.csv")
-    #dataframe['clean'] = dataframe.apply(cleaning, args=("emma",),axis='columns')
-    #dataframe.to_csv("other/emma_data.csv", index = False)
-    
-    #exit(-1)
+    dataframe = pd.read_csv("other/results.csv")
     
     ############## SPECTRAL FEATURES ###############################
     #dataframe['envelope'] = dataframe.apply(get_envelope, axis = 'columns')
@@ -594,62 +585,6 @@ if __name__ =='__main__':
     dataframe['num_zero_crossings'] = dataframe.apply(analyze_zero_crossing, axis='columns')
     print("############# ZCR completed ##################")
     print("saving file...")
-    print("completed paige analysis")
+    print("completed analysis")
     # Write out the updated dataframe
-    dataframe.to_csv("processed_results_paige.csv", index=False)
-
-    ############ analyzing data for Emma's Voice ################
-    dataframe = pd.read_csv("other/Emma_data.csv")
-    #dataframe['clean'] = dataframe.apply(cleaning, axis='columns')
-    #dataframe.to_csv("other/Emma_Paige_data2.csv", index = False)
-    #exit(-1)
-
-    
-    ############## SPECTRAL FEATURES ###############################
-    #dataframe['envelope'] = dataframe.apply(get_envelope, axis = 'columns')
-    dataframe['spectral_slope'] = dataframe.apply(spectral_slope, args=("emma",), axis='columns')
-    print("############# spectral slope completed ##################")
-    dataframe['mfcc'] = dataframe.apply(analyse_mfcc, args=("emma",), axis='columns')
-    print("############# mfcc completed ##################")
-    dataframe['mean_spectral_rf'] = dataframe.apply(mean_spectral_rollof, args=("emma",), axis='columns') #TECHNICALLY SPECTRAL FEATURE 
-    print("############# mean spectral roll-off completed ##################")
-    ################### PITCH FEATURES ###################
-    dataframe['max_jump'] = dataframe.apply(max_jump, args=("emma",), axis='columns')
-    print("############# max jump completed ##################")
-    dataframe['peak_to_valley'] = dataframe.apply(peak_to_valley, args=("emma",), axis='columns')
-    print("############# mean peak to mean valley completed ##################")
-    dataframe['pitch'] = dataframe.apply(analyse_pitch, args=("emma",), axis='columns')
-    print("############# median F0 completed ##################")
-    dataframe['pitch_range'] = dataframe.apply(analyze_pitch_range, args=("emma",), axis='columns')
-    print("############# F0 range completed ##################")
-
-    ################### RATE OF SPEECH FEATURES and LOUDNESS ###################
-    dataframe['max_intensity'] = dataframe.apply(get_max_intensity, args=("emma",), axis='columns')
-    print("############# max intensity completed ##################")
-    dataframe['mean_intensity'] = dataframe.apply(analyse_intensity, args=("emma",), axis='columns')
-    print("############# mean intensity completed ##################")
-    dataframe['syll_count'] = dataframe.apply(get_number_sylls, args=("emma",), axis='columns') #speech rate
-    print("############# syllables per clip ##################")
-    #dataframe['word_count'] = dataframe.apply(get_number_words, axis='columns')
-    dataframe['pause_length'] = dataframe.apply(pauses, axis='columns') #number of pauses per second
-    print("############# pause rate completed ##################")
-    dataframe['energy'] = dataframe.apply(get_energy, args=("emma",), axis='columns')
-    print("############# energy completed ##################")
-
-    ################### HARMONICS ##############################
-    dataframe['harmonics_to_noise'] = dataframe.apply(analyse_harmonics, axis='columns') #harmonics from the lecture slides seems useless - maybe consider?
-    print("############# HNR completed ##################")
-    ################## FORMANTS and ZCR ############################
-    dataframe['f1'] = dataframe.apply(analyse_formants, args=(1,), axis='columns')
-    dataframe['f2'] = dataframe.apply(analyse_formants, args=(2,), axis='columns')
-    dataframe['f3'] = dataframe.apply(analyse_formants, args=(3,), axis='columns')
-    dataframe['f4'] = dataframe.apply(analyse_formants, args=(4,), axis='columns')
-    print("############# formants completed ##################")
-    dataframe['num_zero_crossings'] = dataframe.apply(analyze_zero_crossing, axis='columns')
-    print("############# ZCR completed ##################")
-    print("saving file...")
-    print("completed emma analysis")
-
-
-    # Write out the updated dataframe
-    dataframe.to_csv("processed_results_emma.csv", index=False)
+    dataframe.to_csv("processed_results.csv", index=False)
