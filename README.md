@@ -1,4 +1,4 @@
-# Voice Toolbox <img align="left" width="80" height="80" src="soundwave.jpeg">
+# Voice Toolbox <img align="left" width="90" height="90" src="soundwave.jpeg">
 The place to solve all your audio signal processing needs. 
 
 ## Files
