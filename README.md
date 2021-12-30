@@ -1,4 +1,4 @@
-# Voice Toolbox
+# Voice Toolbox ![wave](soundwave.png)
 The place to solve all your audio signal processing needs. 
 
 ## Files
