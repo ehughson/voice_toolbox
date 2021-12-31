@@ -48,6 +48,9 @@ For PCA analysis of voice data:
  voice_pca.py is for PCA, RFE and Correlation plot:
 * - To run: 'voice_pca.py'
 
+
+> #### **Todo**:
+> * add/integrate Paige's shout detection
 ________________________________________________________________________________________________________________________
 
 
