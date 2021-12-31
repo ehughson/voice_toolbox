@@ -1,7 +1,7 @@
 # Voice Toolbox <img align="left" width="90" height="90" src="soundwave.jpeg">
 The place to solve all your audio signal processing needs. 
 
-The current repo is under **construction**. Goal is to create a repository that contains all voice signal processing functions available from different open source projects and libraries, such as parselmouth and librosa. 
+The current repo is under **construction**. Goal is to create a repository that contains all voice signal processing functions available from different open source projects and libraries, such as parsel mouth and librosa. 
 
 ## Files
 **To start**: Setup a conda environment and run 'pip3 install -r requirements.txt' before running the available scripts. 
