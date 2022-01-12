@@ -65,7 +65,13 @@ if __name__ =='__main__':
     slope = []
     roll = []
     duration = []
+    filename = []
+    if not pathlist:
+      raise ValueError("The filepath must be a .wav file or a folder containing .wav files")
     for path in pathlist:
+      filename_ext = os.path.basename(os.path.normpath(path))
+      filename_no_ext = filename_ext.split('.', 1)[0]
+      filename.append(filename_no_ext)
       for feature in dic:
         for func in function_dic[feature]:
           value = func(path)
