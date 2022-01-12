@@ -18,7 +18,7 @@ parser.add_argument(
 )
 parser.add_argument(
   "filePath",
-  help="path to the file, or folder containing the files, must be in .wav format"
+  help="path to the file (including '.wav extension), or folder containing the files, audio files must be in .wav format"
 )
 parser.add_argument(
     "--writePath", default="spectral_features.csv",
@@ -54,6 +54,10 @@ if __name__ =='__main__':
                     "spectral_features":[get_envelope, spectral_slope, analyse_mfcc, mean_spectral_rollof]}
     
     # Files are read in order of the time created
+    if ".wav" in PATH:
+      pathlist = [PATH]
+    else :
+      pathlist = sorted(Path(PATH).glob('**/*.wav'), key=os.path.getmtime)
     pathlist = sorted(Path(PATH).glob('**/*.wav'), key=os.path.getmtime)
     dic = {}
     for k in args.__dict__:
