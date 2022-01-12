@@ -17,7 +17,7 @@ parser.add_argument(
 )
 parser.add_argument(
   "filePath",
-  help="path to the file, or folder containing the files, must be in .wav format"
+  help="path to the file (including '.wav extension), or folder containing the files, audio files must be in .wav format"
 )
 parser.add_argument(
     "--writePath", default="spectral_features.csv",
