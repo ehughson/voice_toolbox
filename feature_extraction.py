@@ -35,7 +35,10 @@ WRITE_PATH = args.writePath
     
 if __name__ =='__main__':
     # Files are read in order of the time created
-    pathlist = sorted(Path(PATH).glob('**/*.wav'), key=os.path.getmtime)
+    if ".wav" in PATH:
+      pathlist = [PATH]
+    else :
+      pathlist = sorted(Path(PATH).glob('**/*.wav'), key=os.path.getmtime)
     slope = []
     roll = []
     duration = []
