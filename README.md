@@ -9,7 +9,7 @@ The current repo is under **construction**. Goal is to create a repository that 
 
 ________________________________________________________________________________________________________________________
 The script for extracting features is parsel_process.py. 
- * **To run**: 'python3 extract_features.py <sampling rate> <filepath> <output filepath> --<feature flag>'
+ * **To run**: "python3 extract_features.py [sampling rate] [filepath] [output filepath] --[feature flag]"
  
  >> **feature flags**: formants, ZCR, harmonics, rate_of_speech, loudness, pitch_features, spectral_features, energy
 
