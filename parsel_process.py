@@ -466,3 +466,31 @@ def pauses(filepath):
         pause_length=len(chunks)/t
 
     return pause_length
+
+def analyse_jitter(filepath):
+    '''
+    Deviations in individual consecutive F0 period lengths
+    Input:
+        row of dataset
+    Output:
+        mean local jitter
+    '''
+    y, s = librosa.load(filepath, sr=41000)
+    sound = parselmouth.Sound(y).convert_to_mono()
+    pointProcess = call(sound, "To PointProcess (periodic, cc)", 75, 400)
+    localJitter = call(pointProcess, "Get jitter (local)", 0, 0, 0.0001, 0.02, 1.3)
+    return localJitter
+
+def analyse_shimmer(filepath):
+    '''
+    Difference of the peak amplitudes of consecutive F0 periods.
+    Input:
+        row of dataset
+    Output:
+        mean local shimmer
+    '''
+    y, s = librosa.load(filepath, sr=41000)
+    sound = parselmouth.Sound(y).convert_to_mono()
+    pointProcess = call(sound, "To PointProcess (periodic, cc)", 75, 400)
+    localShimmer = call([sound, pointProcess], "Get shimmer (local)", 0, 0, 0.0001, 0.02, 1.3, 1.6)
+    return localShimmer

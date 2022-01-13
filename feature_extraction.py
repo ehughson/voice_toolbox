@@ -44,7 +44,7 @@ if __name__ =='__main__':
     )
     parser.add_argument(
       "--pitch_features", action="store_true",
-      help="extract max pitch jump, peak to valley, pitch and pitch range"
+      help="extract max pitch jump, peak to valley, pitch, shimmer, jitter and pitch range"
       )
     parser.add_argument(
       "--spectral_features", action="store_true",
@@ -66,7 +66,7 @@ if __name__ =='__main__':
                     "harmonics": [analyse_harmonics],
                     "rate_of_speech": [get_number_sylls, get_number_words, pauses],
                     "loudness": [get_max_intensity, analyse_intensity],
-                    "pitch_features":[max_jump, peak_to_valley, analyse_pitch, analyze_pitch_range],
+                    "pitch_features":[max_jump, peak_to_valley, analyse_pitch, analyze_pitch_range, analyse_shimmer, analyse_jitter],
                     "spectral_features":[get_envelope, spectral_slope, analyse_mfcc, mean_spectral_rollof],
                     "energy":[get_energy]}
 
@@ -79,9 +79,7 @@ if __name__ =='__main__':
     for k in args.__dict__:
       if (args.__dict__[k] == True):
         dic[k] = []
-    
 
-    
     filename = []
     itr = 0
     store_formants = []
