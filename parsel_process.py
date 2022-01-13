@@ -6,8 +6,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import os.path
-import speech_recognition as sr
-import syllables
+#import speech_recognition as sr
+#import syllables
 from scipy import signal
 from scipy.io import wavfile
 from scipy.signal import find_peaks
