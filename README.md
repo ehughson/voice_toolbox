@@ -11,10 +11,8 @@ ________________________________________________________________________________
 The script for extracting features is parsel_process.py. 
  * **To run**: "python3 extract_features.py [sampling rate] [filepath] [output filepath] --[feature flag]"
  
- >> **feature flags**: formants, ZCR, harmonics, rate_of_speech, loudness, pitch_features, spectral_features, energy
+ > **feature flags**: formants, ZCR, harmonics, rate_of_speech, loudness, pitch_features, spectral_features, energy
 
- 
-> * all features will be saved to "processed_results.csv"
 ### **Features currently availabe**:
 1. *Spectral Features*:
 * pitch
