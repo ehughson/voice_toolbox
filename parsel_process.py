@@ -534,9 +534,7 @@ def pauses(row):
         pause_length=len(chunks)/t
 
     return pause_length
-
-
-    
+'''
 if __name__ =='__main__':
 
     ############ analyzing data for Emma's Voice ################
@@ -588,3 +586,4 @@ if __name__ =='__main__':
     print("completed analysis")
     # Write out the updated dataframe
     dataframe.to_csv("processed_results.csv", index=False)
+'''
