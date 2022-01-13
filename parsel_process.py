@@ -2,18 +2,23 @@ import parselmouth
 from parselmouth.praat import call
 import librosa
 import librosa.display
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import os.path
-#import speech_recognition as sr
-#import syllables
+
+import speech_recognition as sr
+import syllables
+import soundfile as sf
+
 from scipy import signal
 from scipy.io import wavfile
 from scipy.signal import find_peaks
 from scipy.signal import argrelextrema
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
+
 
 
 SAMPLE_RATE = 22050
@@ -46,7 +51,7 @@ plt.rcParams['figure.dpi'] = 100
     
 #Audacity removes background noise better!!
 
-def max_jump(row, name):
+def max_jump(filepath):
     '''
     The max jump from peak/valley to peak in the F0 contour. 
     Input:
@@ -54,8 +59,6 @@ def max_jump(row, name):
     Output:
         mean of the max jump between peak/valley to peak. 
     '''
-    title = row['Title']
-    filepath = "edited_clips_{}/{}_cleaned_NS.wav".format(name,title[0:-4])
     sound = parselmouth.Sound(filepath).convert_to_mono()
     F0 = sound.to_pitch().selected_array['frequency']
 
@@ -80,7 +83,7 @@ def max_jump(row, name):
     
     return np.mean(peak_differences)/100
 
-def peak_to_valley(row, name):
+def peak_to_valley(filepath):
     '''
     Mean peak to valley distance in F0 contour. 
     Input:
@@ -88,8 +91,6 @@ def peak_to_valley(row, name):
     Output:
         mean peak to valley. 
     '''
-    title = row['Title']
-    filepath = "edited_clips_{}/{}_cleaned_NS.wav".format(name, title[0:-4])
     sound = parselmouth.Sound(filepath).convert_to_mono()
     F0 = sound.to_pitch().selected_array['frequency']
 
@@ -112,7 +113,7 @@ def peak_to_valley(row, name):
     
     return (np.mean(peak_differences)/100)
 
-def analyse_pitch(row, name):
+def analyse_pitch(filepath):
     '''
     Pitch is the quality of sound governed by the rate of vibrations. Degree of highness and lowness of a tone.
     F0 is the lowest point in a periodic waveform. WARNING: this may not be applicable to current dataset 
@@ -121,14 +122,12 @@ def analyse_pitch(row, name):
     Output:
         mean of the fundamental frequency found  
     '''
-    title = row['Title']
-    filepath =  "edited_clips_{}/{}_cleaned_NS.wav".format(name,title[0:-4])
     sound = parselmouth.Sound(filepath).convert_to_mono()
     F0 = sound.to_pitch().selected_array['frequency']
     F0[F0==0] = np.nan
     return np.nanmedian(F0)
 
-def analyze_pitch_range(row, name):
+def analyze_pitch_range(filepath):
     '''
     Pitch is the quality of sound governed by the rate of vibrations. Degree of highness and lowness of a tone.
     F0 is the lowest point in a periodic waveform. WARNING: this may not be applicable to current dataset 
@@ -137,8 +136,6 @@ def analyze_pitch_range(row, name):
     Output:
         mean of the fundamental frequency found  
     '''
-    title = row['Title']
-    filepath =  "edited_clips_{}/{}_cleaned_NS.wav".format(name, title[0:-4])
     sound = parselmouth.Sound(filepath).convert_to_mono()
     F0 = sound.to_pitch().selected_array['frequency']
     F0[F0==0] = np.nan
@@ -146,17 +143,17 @@ def analyze_pitch_range(row, name):
     maxval = np.nanmax(F0)
     return maxval - minval
 
-def analyse_formants(row, f):
+def analyse_formants(f, filepath):
     '''
     "A formant is acoustic energy around a frequency"
     CURRENTLY: Measures formants ONLY at glottal pulses
     Input:
         row of dataset
+        f: formant we want
     Output:
         mean of the given formant (e.g., f1, f2, f3, f4)
     '''
-    title = row['clean']
-    filepath = "{}".format(title)
+    print(f"extracting formant: {f}")
     sound = parselmouth.Sound(filepath).convert_to_mono()
     #pointProcess = parselmouth.praat.call(sound,"To PointProcess (periodic, cc)...", 75, 300)
     #formants = parselmouth.praat.call(sound, "To Formant (burg)", 0.0025, 5, 5000, 0.025, 50)
@@ -182,7 +179,7 @@ def analyse_formants(row, f):
 
     return np.mean(f_list)
 
-def analyse_mfcc(row, name):
+def analyse_mfcc(filepath):
     '''
     Creates MFCC 
     Input:
@@ -190,15 +187,12 @@ def analyse_mfcc(row, name):
     Output:
         outputs 20 by # array containing the mfcc 
     '''
-
-    title = row['Title']
-    filepath = "edited_clips_{}/{}_cleaned_NS.wav".format(name,title[0:-4])
     x, sr = librosa.load(filepath)
     x = librosa.to_mono(x)
     mfcc = librosa.feature.mfcc(x, sr=sr)
     return np.mean(mfcc)
 
-def get_energy(row, name):
+def get_energy(filepath):
     '''
     Energy of a signal corresponds to the total magnitude of the signal. 
     For audio signals, that roughly corresponds to how loud the signal is. 
@@ -207,17 +201,14 @@ def get_energy(row, name):
     Output:
         energy of the signal. 
     '''
-    title = row['Title']
-    filepath = "edited_clips_{}/{}_cleaned_NS.wav".format(name, title[0:-4])
     sound = parselmouth.Sound(filepath).convert_to_mono()
     energy = sound.get_energy()
     y, s = librosa.load(filepath)
     t =librosa.get_duration(y=y, sr=s)
-    #print(energy)
 
     return energy
 
-def analyse_intensity(row, name):
+def analyse_intensity(filepath):
     '''
     Intensity represents the power that the sound waves produce
     Input:
@@ -225,15 +216,13 @@ def analyse_intensity(row, name):
     Output:
         Returns mean intensity or loudness of sound extracted from Praat. 
     '''
-    title = row['Title']
-    filepath = "edited_clips_{}/{}_cleaned_NS.wav".format(name, title[0:-4])
     #mean_intensity = parselmouth.praat.call(parselmouth.Sound(filepath).convert_to_mono().to_intensity(), "Get mean", 0, 0, "energy")
     average_intensity = parselmouth.Sound(filepath).convert_to_mono().to_intensity()
     y, s = librosa.load(filepath)
     t =librosa.get_duration(y=y, sr=s)
     return average_intensity.get_average() #the duration will weight the average down for longer clips
 
-def get_max_intensity(row, name):
+def get_max_intensity(filepath):
     '''
     Intensity represents the power that the sound waves produce
     references: https://www.audiolabs-erlangen.de/resources/MIR/FMP/C1/C1S3_Dynamics.html
@@ -242,8 +231,6 @@ def get_max_intensity(row, name):
     Output:
         Returns max intensity or power in dB. 
     '''
-    title = row['Title']
-    filepath = "edited_clips_{}/{}_cleaned_NS.wav".format(name, title[0:-4])
     y, s = librosa.load(filepath, mono=True)
     #### section from code taken from reference
     win_len_sec = 0.2
@@ -263,7 +250,7 @@ def get_max_intensity(row, name):
     '''
     return np.max(power)
 
-def analyze_zero_crossing(row):
+def analyze_zero_crossing(filepath):
     '''
     Zero crossing tells us where the voice and unvoice speech occurs. 
     "Large number of zero crossings tells us there is no dominant low frequency oscillation"
@@ -273,8 +260,6 @@ def analyze_zero_crossing(row):
     Output:
         Returns the number of zero crossing points that occur 
     '''
-    title = row['clean']
-    filepath = "{}".format(title)
     x, s = librosa.load(filepath)
     x = librosa.to_mono(x)
     
@@ -292,8 +277,7 @@ def clean_audio(input_file, clean_file):
     os.remove('noise.prof')
     return clean_file
 
-def cleaning(row, name):
-    print(row['Title'])
+def cleaning(filepath):
     '''
     Cleaning function to remove noise using sox.  
     Input:
@@ -301,17 +285,15 @@ def cleaning(row, name):
     Output:
         returns a clean audio file with noise removed. 
     '''
-    title = row['Title']
-    input_file = "edited_clips_{}/{}.m4a".format(name, title[0:-4]) #TODO: need to change this to be more flexible
-    wav_audio = AudioSegment.from_file(input_file, format="m4a")
-    wav_audio.export(input_file[0:-4] + ".wav", format="wav")
-    input_file = input_file[0:-4] + ".wav"
-    print(input_file[0:-4])
+    wav_audio = AudioSegment.from_file(filepath, format="m4a")
+    wav_audio.export(filepath[0:-4] + ".wav", format="wav")
+    input_file = filepath[0:-4] + ".wav"
+    print(filepath[0:-4])
     clean_file = input_file[0:-4]+'_cleaned.wav'
-    cleaned_file = clean_audio(input_file, clean_file)
+    cleaned_file = clean_audio(filepath, clean_file)
     return cleaned_file 
 
-def get_number_sylls(row, name):
+def get_number_sylls(filepath):
     '''
     Rate of speech using number of syllables per second. 
     Input:
@@ -319,9 +301,6 @@ def get_number_sylls(row, name):
     Output:
         syllables/second. 
     '''
-    title = row['clean']
-    filepath = "{}".format(title)
-    print(filepath)
     r = sr.Recognizer()
     with sr.AudioFile(filepath) as source:              
         audio = r.record(source)                        
@@ -337,9 +316,6 @@ def get_number_sylls(row, name):
         # API was unreachable or unresponsive
         response = False
     except sr.UnknownValueError:    
-        title = row['Title']
-        filepath = "edited_clips_{}/{}_cleaned_NS.wav".format(name, title[0:-4])
-        print(filepath)
         r = sr.Recognizer()
         with sr.AudioFile(filepath) as source:              
             audio = r.record(source)  
@@ -358,22 +334,10 @@ def get_number_sylls(row, name):
     syll = syllables.estimate(list)
     y, s = librosa.load(filepath)
     y = librosa.to_mono(y)
-    #x = librosa.to_mono(x)
-    #print(len(x))
-    #print(len(x)/len(list.split()))
     duration =librosa.get_duration(y=y, sr=s)
-    
-    #with contextlib.closing(wave.open(filepath,'r')) as f:
-    #    frames = f.getnframes()
-    #    rate = f.getframerate()
-    #    duration = frames / float(rate)
-    #    print(duration/100)
-    #return len(list.split())/(duration/100)
-    #print(duration/100)
-
     return syll/duration
 
-def get_number_words(row, name):
+def get_number_words(filepath):
     '''
     Rate of speech using number of words per second. 
     Input:
@@ -381,8 +345,6 @@ def get_number_words(row, name):
     Output:
         words/second. 
     '''
-    title = row['clean']
-    filepath = "{}".format(title)
     r = sr.Recognizer()
     with sr.AudioFile(filepath) as source:              
         audio = r.record(source)                        
@@ -394,17 +356,12 @@ def get_number_words(row, name):
     except LookupError:                                
         print("Could not understand audio")
 
-    #syll = syllables.estimate(list)
     y, s = librosa.load(filepath)
     y = librosa.to_mono(y)
-    #x = librosa.to_mono(x)
-    #print(len(x))
-    #print(len(x)/len(list.split()))
     duration =librosa.get_duration(y=y, sr=s)
     return len(list.split())/duration
-    #return syll/duration
 
-def spectral_slope(row, name):
+def spectral_slope(filepath):
     '''
     A spectral slope function that uses the mel spectrogram as input. 
     #reference: https://www.audiocontentanalysis.org/code/audio-features/spectral-slope-2/
@@ -413,23 +370,6 @@ def spectral_slope(row, name):
     Output:
         mean spectral slope
     '''
-    import soundfile as sf
-    def speech_file_to_array_fn(batch):
-        start = 0 
-        stop = 20 
-        srate = 22_050
-        speech_array, sampling_rate = sf.read(filepath, start = start * srate , stop = stop * srate)
-        speech_array = speech_array.T
-        speech = librosa.resample(np.asarray(speech_array), sampling_rate, srate)
-        #batch["sampling_rate"] = srate
-        #batch["parent"] = batch["label"]
-        return speech, srate
-
-    title = row['Title']
-    filepath = "edited_clips_{}/{}_cleaned_NS.wav".format(name, title[0:-4])
-    print(filepath)
-    #data, s = speech_file_to_array_fn(filepath)
-    #print(data)
     y, s = librosa.load(filepath)
     y = librosa.to_mono(y)
     melspec = librosa.feature.melspectrogram(y=y, sr=s)
@@ -440,7 +380,7 @@ def spectral_slope(row, name):
     spec_slope = np.dot(kmu, melspec) / np.dot(kmu, kmu)
     return np.mean(spec_slope)
 
-def get_envelope(row):
+def get_envelope(filepath):
     '''
     Returns spectral envelope. INCOMPLETE: NEEDS TO BE FINISHED.  
     Input:
@@ -448,8 +388,6 @@ def get_envelope(row):
     Output:
         spectral envelope
     '''
-    title = row['clean']
-    filepath = "{}".format(title)
     y, s = librosa.load(filepath)
     y = librosa.to_mono(y)
     t =librosa.get_duration(y=y, sr=s)
@@ -473,7 +411,7 @@ def get_envelope(row):
     exit(-1)
     return
 
-def analyse_harmonics(row):
+def analyse_harmonics(filepath):
     '''
     Harmonics to noise which is the ratio of noise to harmonics in the audio signal.  
     Input:
@@ -481,14 +419,12 @@ def analyse_harmonics(row):
     Output:
         hnr
     '''
-    title = row['clean']
-    filepath = "{}".format(title)
     sound = parselmouth.Sound(filepath).convert_to_mono()
     harmonicity = call(sound, "To Harmonicity (cc)", 0.01, 75, 0.1, 1.0)
     hnr = call(harmonicity, "Get mean", 0, 0)
     return hnr
 
-def mean_spectral_rollof(row, name):
+def mean_spectral_rollof(filepath):
     '''
     The spectral roll-off , which indicates liveliness of audio signal.  
     Input:
@@ -496,14 +432,12 @@ def mean_spectral_rollof(row, name):
     Output:
         mean spectral roll-off
     '''
-    title = row['Title']
-    filepath = "edited_clips_{}/{}_cleaned_NS.wav".format(name, title[0:-4])
     y, s = librosa.load(filepath)
     y = librosa.to_mono(y)
     spec_rf = librosa.feature.spectral_rolloff(y=y, sr=s, roll_percent=0.50)[0] #from paper about education style
     return np.mean(spec_rf)
 
-def pauses(row):
+def pauses(filepath):
     '''
     Pause rate which is an indicate of rate of speech. Calculated by dividing the duration by 
     the total number of pauses.
@@ -513,8 +447,6 @@ def pauses(row):
         pause rate
     '''
     #reference:https://www.geeksforgeeks.org/python-speech-recognition-on-large-audio-files/
-    title = row['clean']
-    filepath = "{}".format(title)
     file = AudioSegment.from_wav(filepath)
     chunks = split_on_silence(file,
         min_silence_len = 50,
@@ -534,56 +466,3 @@ def pauses(row):
         pause_length=len(chunks)/t
 
     return pause_length
-'''
-if __name__ =='__main__':
-
-    ############ analyzing data for Emma's Voice ################
-    dataframe = pd.read_csv("other/results.csv")
-    
-    ############## SPECTRAL FEATURES ###############################
-    #dataframe['envelope'] = dataframe.apply(get_envelope, axis = 'columns')
-    dataframe['spectral_slope'] = dataframe.apply(spectral_slope, args=("paige",), axis='columns')
-    print("############# spectral slope completed ##################")
-    dataframe['mfcc'] = dataframe.apply(analyse_mfcc, args=("paige",), axis='columns')
-    print("############# mfcc completed ##################")
-    dataframe['mean_spectral_rf'] = dataframe.apply(mean_spectral_rollof, args=("paige",), axis='columns') #TECHNICALLY SPECTRAL FEATURE 
-    print("############# mean spectral roll-off completed ##################")
-    ################### PITCH FEATURES ###################
-    dataframe['max_jump'] = dataframe.apply(max_jump, args=("paige",), axis='columns')
-    print("############# max jump completed ##################")
-    dataframe['peak_to_valley'] = dataframe.apply(peak_to_valley, args=("paige",), axis='columns')
-    print("############# mean peak to mean valley completed ##################")
-    dataframe['pitch'] = dataframe.apply(analyse_pitch, args=("paige",), axis='columns')
-    print("############# median F0 completed ##################")
-    dataframe['pitch_range'] = dataframe.apply(analyze_pitch_range, args=("paige",), axis='columns')
-    print("############# F0 range completed ##################")
-
-    ################### RATE OF SPEECH FEATURES and LOUDNESS ###################
-    dataframe['max_intensity'] = dataframe.apply(get_max_intensity, args=("paige",), axis='columns')
-    print("############# max intensity completed ##################")
-    dataframe['mean_intensity'] = dataframe.apply(analyse_intensity, args=("paige",), axis='columns')
-    print("############# mean intensity completed ##################")
-    dataframe['syll_count'] = dataframe.apply(get_number_sylls, args=("paige",), axis='columns') #speech rate
-    print("############# syllables per clip ##################")
-    #dataframe['word_count'] = dataframe.apply(get_number_words, axis='columns')
-    dataframe['pause_length'] = dataframe.apply(pauses, axis='columns') #number of pauses per second
-    print("############# pause rate completed ##################")
-    dataframe['energy'] = dataframe.apply(get_energy, args=("paige",), axis='columns')
-    print("############# energy completed ##################")
-
-    ################### HARMONICS ##############################
-    dataframe['harmonics_to_noise'] = dataframe.apply(analyse_harmonics, axis='columns') #harmonics from the lecture slides seems useless - maybe consider?
-    print("############# HNR completed ##################")
-    ################## FORMANTS and ZCR ############################
-    dataframe['f1'] = dataframe.apply(analyse_formants, args=(1,), axis='columns')
-    dataframe['f2'] = dataframe.apply(analyse_formants, args=(2,), axis='columns')
-    dataframe['f3'] = dataframe.apply(analyse_formants, args=(3,), axis='columns')
-    dataframe['f4'] = dataframe.apply(analyse_formants, args=(4,), axis='columns')
-    print("############# formants completed ##################")
-    dataframe['num_zero_crossings'] = dataframe.apply(analyze_zero_crossing, axis='columns')
-    print("############# ZCR completed ##################")
-    print("saving file...")
-    print("completed analysis")
-    # Write out the updated dataframe
-    dataframe.to_csv("processed_results.csv", index=False)
-'''

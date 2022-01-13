@@ -6,6 +6,8 @@ import argparse
 #from spectral_functions import *
 from parsel_process import *
 
+def add_filpath(filepath):
+  return filepath
 
 if __name__ =='__main__':
     parser = argparse.ArgumentParser(description = "Provide the sampling rate and file path and features to be extracted")
@@ -58,41 +60,49 @@ if __name__ =='__main__':
     PATH = args.filePath
     WRITE_PATH = args.writePath
 
-    #function_dic = {"formants": [analyse_formants(1), analyse_formants(2), analyse_formants(3), analyse_formants(4)],
-    #                "ZCR": [analyze_zero_crossing],
-    #                "harmonics": [analyse_harmonics],
-    #                "rate_of_speech": [get_number_sylls, get_number_words, pauses],
-    #                "loudness": [get_max_intensity, analyse_intensity],
-    #                "pitch_features":[max_jump, peak_to_valley, analyse_pitch, analyze_pitch_range],
-    #                "spectral_features":[get_envelope, spectral_slope, analyse_mfcc, mean_spectral_rollof],
-    #                "energy":[get_energy]}
+    function_dic = {"filepath":[add_filpath],
+                    "formants": [analyse_formants, analyse_formants, analyse_formants, analyse_formants],
+                    "ZCR": [analyze_zero_crossing],
+                    "harmonics": [analyse_harmonics],
+                    "rate_of_speech": [get_number_sylls, get_number_words, pauses],
+                    "loudness": [get_max_intensity, analyse_intensity],
+                    "pitch_features":[max_jump, peak_to_valley, analyse_pitch, analyze_pitch_range],
+                    "spectral_features":[get_envelope, spectral_slope, analyse_mfcc, mean_spectral_rollof],
+                    "energy":[get_energy]}
 
     # Files are read in order of the time created
     if ".wav" in PATH:
       pathlist = [PATH]
     else :
       pathlist = sorted(Path(PATH).glob('**/*.wav'), key=os.path.getmtime)
-    dic = {}
+    dic = {"filepath": []}
     for k in args.__dict__:
       if (args.__dict__[k] == True):
         dic[k] = []
+    
 
-    print(dic)
-
-    #slope = []
-    #roll = []
-    #duration = []
-    #filename = []
-    #if not pathlist:
-    #  raise ValueError("The filepath must be a .wav file or a folder containing .wav files")
-    #for path in pathlist:
-    #  filename_ext = os.path.basename(os.path.normpath(path))
-    #  filename_no_ext = filename_ext.split('.', 1)[0]
-    #  filename.append(filename_no_ext)
-    #  for feature in dic:
-    #    for func in function_dic[feature]:
-    #      value = func(path)
-    #      dic[feature].append(value)
+    
+    filename = []
+    itr = 0
+    store_formants = []
+    if not pathlist:
+      raise ValueError("The filepath must be a .wav file or a folder containing .wav files")
+    for path in pathlist:
+      filename_ext = os.path.basename(os.path.normpath(path))
+      filename_no_ext = filename_ext.split('.', 1)[0]
+      filename.append(filename_no_ext)
+      for feature in dic:
+        for func in function_dic[feature]:
+          if feature == "formants" and itr <4:
+            store_formants.append(func(itr+1, path))
+            itr+=1
+            if itr == 4:
+              itr = 0
+              dic[feature].append(store_formants)
+              store_formants = []
+          else:
+            value = func(path)
+            dic[feature].append(value)
     """
     print(str(path))
     ############## SPECTRAL FEATURES ###############################
@@ -113,5 +123,5 @@ if __name__ =='__main__':
     ##    'slope': slope,
     #   'rolloff': roll
     #  })
-    #spectral_df = pd.DataFrame.from_dict(dic)
-    #spectral_df.to_csv(WRITE_PATH,index=False)
+    spectral_df = pd.DataFrame.from_dict(dic)
+    spectral_df.to_csv(WRITE_PATH,index=False)
