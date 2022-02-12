@@ -5,6 +5,7 @@ import os
 import argparse
 #from spectral_functions import *
 from parsel_process import *
+from functools import partial, reduce
 
 def add_filpath(filepath):
   return filepath
@@ -69,6 +70,16 @@ if __name__ =='__main__':
                     "pitch_features":[max_jump, peak_to_valley, analyse_pitch, analyze_pitch_range, analyse_shimmer, analyse_jitter],
                     "spectral_features":[get_envelope, spectral_slope, analyse_mfcc, mean_spectral_rollof],
                     "energy":[get_energy]}
+    
+    name_dic = {"filepath":["add_filpath"],
+                    "formants": ["analyse_formants", "analyse_formants", "analyse_formants", "analyse_formants"],
+                    "ZCR": ["analyze_zero_crossing"],
+                    "harmonics": ["analyse_harmonics"],
+                    "rate_of_speech": ["get_number_sylls", "get_number_words", "pauses"],
+                    "loudness": ["get_max_intensity", "analyse_intensity"],
+                    "pitch_features":["max_jump", "peak_to_valley", "analyse_pitch", "analyze_pitch_range", "analyse_shimmer", "analyse_jitter"],
+                    "spectral_features":["get_envelope", "spectral_slope", "analyse_mfcc", "mean_spectral_rollof"],
+                    "energy":["get_energy"]}
 
     # Files are read in order of the time created
     if ".wav" in PATH:
@@ -78,48 +89,55 @@ if __name__ =='__main__':
     dic = {"filepath": []}
     for k in args.__dict__:
       if (args.__dict__[k] == True):
-        dic[k] = []
+        dic[k] = {}
 
-    filename = []
+    print(dic)
     itr = 0
     store_formants = []
     if not pathlist:
       raise ValueError("The filepath must be a .wav file or a folder containing .wav files")
+    files = []
     for path in pathlist:
       filename_ext = os.path.basename(os.path.normpath(path))
       filename_no_ext = filename_ext.split('.', 1)[0]
-      filename.append(filename_no_ext)
+      files.append(filename_no_ext)
+      print(filename_no_ext)
       for feature in dic:
-        for func in function_dic[feature]:
-          if feature == "formants" and itr <4:
-            store_formants.append(func(itr+1, path))
-            itr+=1
-            if itr == 4:
-              itr = 0
-              dic[feature].append(store_formants)
-              store_formants = []
-          else:
-            value = func(path)
-            dic[feature].append(value)
-    """
-    print(str(path))
-    ############## SPECTRAL FEATURES ###############################
-    audio = AudioSegment.from_file(path)
-    duration.append(audio.duration_seconds)
-    s_slope = spectral_slope(path)
-    print("############# spectral slope completed ##################")
-    mfcc = analyse_mfcc(path)
-    print("############# mfcc completed ##################")
-    rolloff = mean_spectral_rollof(path)
-    print("############# mean spectral roll-off completed ##################")
-    slope.append(s_slope)
-    roll.append(rolloff)
-    """
+        if feature!= "filepath":
+          for func in function_dic[feature]: 
+            if feature == "formants" and itr <4:
+              store_formants.append(func(itr+1, str(path)))
+              itr+=1
+              if itr == 4:
+                itr = 0
+                if str(func.__name__) in dic[feature]:
+                  dic[feature][str(func.__name__)].append(store_formants)
+                else:
+                  dic[feature][str(func.__name__)] = [store_formants]
+                store_formants = []
+            else:
+              value = func(str(path), SAMPLING_RATE)
+              if str(func.__name__) in dic[feature]:
+                dic[feature][str(func.__name__)].append(value)
+              else:
+                dic[feature][str(func.__name__)] = [value]
 
     #spectral_df = pd.DataFrame(
     #  {'duration' : duration,
     ##    'slope': slope,
     #   'rolloff': roll
     #  })
-    spectral_df = pd.DataFrame.from_dict(dic)
-    spectral_df.to_csv(WRITE_PATH,index=False)
+    print(f"len of loudness {dic['loudness']['get_max_intensity']} and len of files {len(files)}")
+    loudness_df = pd.DataFrame.from_dict(dic['loudness'])
+    loudness_df['title'] = files
+    energy_df = pd.DataFrame.from_dict(dic['energy'])
+    energy_df['title'] = files
+    pitch_df = pd.DataFrame.from_dict(dic['pitch_features'])
+    pitch_df['title'] = files
+    ros_df = pd.DataFrame.from_dict(dic['rate_of_speech'])
+    ros_df['title'] = files
+    dfs = [loudness_df, energy_df, pitch_df, ros_df]
+    df_final = reduce(lambda left,right: pd.merge(left,right,on='title'), dfs)
+
+    df_final.to_csv(WRITE_PATH,index=False)
+
