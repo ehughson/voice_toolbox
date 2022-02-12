@@ -51,7 +51,7 @@ plt.rcParams['figure.dpi'] = 100
     
 #Audacity removes background noise better!!
 
-def max_jump(filepath):
+def max_jump(filepath, sample_rate=21000):
     '''
     The max jump from peak/valley to peak in the F0 contour. 
     Input:
@@ -59,10 +59,11 @@ def max_jump(filepath):
     Output:
         mean of the max jump between peak/valley to peak. 
     '''
+    print(filepath)
     sound = parselmouth.Sound(filepath).convert_to_mono()
     F0 = sound.to_pitch().selected_array['frequency']
 
-    y, s = librosa.load(filepath)
+    y, s = librosa.load(filepath, sr=sample_rate)
     y = librosa.to_mono(y)
     t =librosa.get_duration(y=y, sr=s)
     F0[F0==0] = np.nan
@@ -83,7 +84,7 @@ def max_jump(filepath):
     
     return np.mean(peak_differences)/100
 
-def peak_to_valley(filepath):
+def peak_to_valley(filepath, sample_rate=21000):
     '''
     Mean peak to valley distance in F0 contour. 
     Input:
@@ -94,7 +95,7 @@ def peak_to_valley(filepath):
     sound = parselmouth.Sound(filepath).convert_to_mono()
     F0 = sound.to_pitch().selected_array['frequency']
 
-    y, s = librosa.load(filepath)
+    y, s = librosa.load(filepath, sr=sample_rate)
     y = librosa.to_mono(y)
     t =librosa.get_duration(y=y, sr=s)
     F0[F0==0] = np.nan
@@ -113,7 +114,7 @@ def peak_to_valley(filepath):
     
     return (np.mean(peak_differences)/100)
 
-def analyse_pitch(filepath):
+def analyse_pitch(filepath, sample_rate=21000):
     '''
     Pitch is the quality of sound governed by the rate of vibrations. Degree of highness and lowness of a tone.
     F0 is the lowest point in a periodic waveform. WARNING: this may not be applicable to current dataset 
@@ -127,7 +128,7 @@ def analyse_pitch(filepath):
     F0[F0==0] = np.nan
     return np.nanmedian(F0)
 
-def analyze_pitch_range(filepath):
+def analyze_pitch_range(filepath, sample_rate=21000):
     '''
     Pitch is the quality of sound governed by the rate of vibrations. Degree of highness and lowness of a tone.
     F0 is the lowest point in a periodic waveform. WARNING: this may not be applicable to current dataset 
@@ -179,7 +180,7 @@ def analyse_formants(f, filepath):
 
     return np.mean(f_list)
 
-def analyse_mfcc(filepath):
+def analyse_mfcc(filepath, sample_rate=21000):
     '''
     Creates MFCC 
     Input:
@@ -187,12 +188,12 @@ def analyse_mfcc(filepath):
     Output:
         outputs 20 by # array containing the mfcc 
     '''
-    x, sr = librosa.load(filepath)
+    x, sr = librosa.load(filepath, sr=sample_rate)
     x = librosa.to_mono(x)
     mfcc = librosa.feature.mfcc(x, sr=sr)
     return np.mean(mfcc)
 
-def get_energy(filepath):
+def get_energy(filepath,sample_rate=21000):
     '''
     Energy of a signal corresponds to the total magnitude of the signal. 
     For audio signals, that roughly corresponds to how loud the signal is. 
@@ -208,7 +209,7 @@ def get_energy(filepath):
 
     return energy
 
-def analyse_intensity(filepath):
+def analyse_intensity(filepath,sample_rate=21000):
     '''
     Intensity represents the power that the sound waves produce
     Input:
@@ -222,7 +223,7 @@ def analyse_intensity(filepath):
     t =librosa.get_duration(y=y, sr=s)
     return average_intensity.get_average() #the duration will weight the average down for longer clips
 
-def get_max_intensity(filepath):
+def get_max_intensity(filepath, sample_rate=21000):
     '''
     Intensity represents the power that the sound waves produce
     references: https://www.audiolabs-erlangen.de/resources/MIR/FMP/C1/C1S3_Dynamics.html
@@ -231,12 +232,14 @@ def get_max_intensity(filepath):
     Output:
         Returns max intensity or power in dB. 
     '''
-    y, s = librosa.load(filepath, mono=True)
+    y, s = librosa.load(filepath, mono=True, sr = sample_rate) #TODO rremove sr her
     #### section from code taken from reference
     win_len_sec = 0.2
     power_ref=10**(-12)
     win_len = round(win_len_sec * s)
     win = np.ones(win_len) / win_len
+    if len(win) == 0 or len(y) == 0:
+        return "NA"
     power = 10 * np.log10(np.convolve(y**2, win, mode='same') / power_ref)
     #TODO: putting the z-score here ruins the audio signal :/
     '''
@@ -250,7 +253,7 @@ def get_max_intensity(filepath):
     '''
     return np.max(power)
 
-def analyze_zero_crossing(filepath):
+def analyze_zero_crossing(filepath, sample_rate=21000):
     '''
     Zero crossing tells us where the voice and unvoice speech occurs. 
     "Large number of zero crossings tells us there is no dominant low frequency oscillation"
@@ -293,7 +296,7 @@ def cleaning(filepath):
     cleaned_file = clean_audio(filepath, clean_file)
     return cleaned_file 
 
-def get_number_sylls(filepath):
+def get_number_sylls(filepath, sample_rate=21000):
     '''
     Rate of speech using number of syllables per second. 
     Input:
@@ -306,7 +309,6 @@ def get_number_sylls(filepath):
         audio = r.record(source)                        
 
     try:
-        print(audio)
         list = r.recognize_google(audio, key=None, language='en-IN')     
         #print(len(list.split()))
 
@@ -320,7 +322,6 @@ def get_number_sylls(filepath):
         with sr.AudioFile(filepath) as source:              
             audio = r.record(source)  
         try:
-            print(audio)
             list = r.recognize_google(audio, key=None, language='en-IN')     
             #print(len(list.split()))
         except LookupError:                                
@@ -332,12 +333,12 @@ def get_number_sylls(filepath):
             return 'NA'
 
     syll = syllables.estimate(list)
-    y, s = librosa.load(filepath)
+    y, s = librosa.load(filepath, sr = sample_rate)
     y = librosa.to_mono(y)
     duration =librosa.get_duration(y=y, sr=s)
     return syll/duration
 
-def get_number_words(filepath):
+def get_number_words(filepath, sample_rate=21000):
     '''
     Rate of speech using number of words per second. 
     Input:
@@ -345,6 +346,7 @@ def get_number_words(filepath):
     Output:
         words/second. 
     '''
+    
     r = sr.Recognizer()
     with sr.AudioFile(filepath) as source:              
         audio = r.record(source)                        
@@ -355,13 +357,30 @@ def get_number_words(filepath):
 
     except LookupError:                                
         print("Could not understand audio")
+    except sr.RequestError:
+        # API was unreachable or unresponsive
+        response = False
+    except sr.UnknownValueError:    
+        r = sr.Recognizer()
+        with sr.AudioFile(filepath) as source:              
+            audio = r.record(source)  
+        try:
+            list = r.recognize_google(audio, key=None, language='en-IN')     
+            #print(len(list.split()))
+        except LookupError:                                
+            print("Could not understand audio")
+        except sr.RequestError:
+            # API was unreachable or unresponsive
+            return 'NA'        
+        except sr.UnknownValueError: 
+            return 'NA'
 
-    y, s = librosa.load(filepath)
+    y, s = librosa.load(filepath, sr=sample_rate)
     y = librosa.to_mono(y)
     duration =librosa.get_duration(y=y, sr=s)
     return len(list.split())/duration
 
-def spectral_slope(filepath):
+def spectral_slope(filepath, sample_rate=21000):
     '''
     A spectral slope function that uses the mel spectrogram as input. 
     #reference: https://www.audiocontentanalysis.org/code/audio-features/spectral-slope-2/
@@ -370,7 +389,7 @@ def spectral_slope(filepath):
     Output:
         mean spectral slope
     '''
-    y, s = librosa.load(filepath)
+    y, s = librosa.load(filepath, sr = sample_rate)
     y = librosa.to_mono(y)
     melspec = librosa.feature.melspectrogram(y=y, sr=s)
     t =librosa.get_duration(y=y, sr=s)
@@ -380,7 +399,7 @@ def spectral_slope(filepath):
     spec_slope = np.dot(kmu, melspec) / np.dot(kmu, kmu)
     return np.mean(spec_slope)
 
-def get_envelope(filepath):
+def get_envelope(filepath, sample_rate=21000):
     '''
     Returns spectral envelope. INCOMPLETE: NEEDS TO BE FINISHED.  
     Input:
@@ -388,7 +407,7 @@ def get_envelope(filepath):
     Output:
         spectral envelope
     '''
-    y, s = librosa.load(filepath)
+    y, s = librosa.load(filepath,sr = sample_rate)
     y = librosa.to_mono(y)
     t =librosa.get_duration(y=y, sr=s)
 
@@ -411,7 +430,7 @@ def get_envelope(filepath):
     exit(-1)
     return
 
-def analyse_harmonics(filepath):
+def analyse_harmonics(filepath, sample_rate=21000):
     '''
     Harmonics to noise which is the ratio of noise to harmonics in the audio signal.  
     Input:
@@ -424,7 +443,7 @@ def analyse_harmonics(filepath):
     hnr = call(harmonicity, "Get mean", 0, 0)
     return hnr
 
-def mean_spectral_rollof(filepath):
+def mean_spectral_rollof(filepath, sample_rate=21000):
     '''
     The spectral roll-off , which indicates liveliness of audio signal.  
     Input:
@@ -432,12 +451,12 @@ def mean_spectral_rollof(filepath):
     Output:
         mean spectral roll-off
     '''
-    y, s = librosa.load(filepath)
+    y, s = librosa.load(filepath, sr=sample_rate)
     y = librosa.to_mono(y)
     spec_rf = librosa.feature.spectral_rolloff(y=y, sr=s, roll_percent=0.50)[0] #from paper about education style
     return np.mean(spec_rf)
 
-def pauses(filepath):
+def pauses(filepath, sample_rate=21000):
     '''
     Pause rate which is an indicate of rate of speech. Calculated by dividing the duration by 
     the total number of pauses.
@@ -452,10 +471,11 @@ def pauses(filepath):
         min_silence_len = 50,
         silence_thresh = -45
     )
-    y, s = librosa.load(filepath)
+    y, s = librosa.load(filepath, sr=sample_rate)
     y = librosa.to_mono(y)
     t =librosa.get_duration(y=y, sr=s)
-
+    if t == 0:
+        return "NA"
     try:
         pause_length=len(chunks)/t
     except:
@@ -467,7 +487,7 @@ def pauses(filepath):
 
     return pause_length
 
-def analyse_jitter(filepath):
+def analyse_jitter(filepath, sample_rate=21000):
     '''
     Deviations in individual consecutive F0 period lengths
     Input:
@@ -475,13 +495,13 @@ def analyse_jitter(filepath):
     Output:
         mean local jitter
     '''
-    y, s = librosa.load(filepath, sr=41000)
+    y, s = librosa.load(filepath, sr=sample_rate)
     sound = parselmouth.Sound(y).convert_to_mono()
     pointProcess = call(sound, "To PointProcess (periodic, cc)", 75, 400)
     localJitter = call(pointProcess, "Get jitter (local)", 0, 0, 0.0001, 0.02, 1.3)
     return localJitter
 
-def analyse_shimmer(filepath):
+def analyse_shimmer(filepath, sample_rate=21000):
     '''
     Difference of the peak amplitudes of consecutive F0 periods.
     Input:
@@ -489,7 +509,7 @@ def analyse_shimmer(filepath):
     Output:
         mean local shimmer
     '''
-    y, s = librosa.load(filepath, sr=41000)
+    y, s = librosa.load(filepath, sr=sample_rate)
     sound = parselmouth.Sound(y).convert_to_mono()
     pointProcess = call(sound, "To PointProcess (periodic, cc)", 75, 400)
     localShimmer = call([sound, pointProcess], "Get shimmer (local)", 0, 0, 0.0001, 0.02, 1.3, 1.6)
