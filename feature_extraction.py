@@ -57,38 +57,28 @@ if __name__ =='__main__':
     SAMPLING_RATE = args.samplingRate
     PATH = args.filePath
     WRITE_PATH = args.writePath
+    FEATURES = args.__dict__
 
-    function_dic = {"filepath":[add_filpath],
-                    "formants": [analyse_formants, analyse_formants, analyse_formants, analyse_formants],
+    function_dic = {"formants": [analyse_formants, analyse_formants, analyse_formants, analyse_formants],
                     "ZCR": [analyze_zero_crossing],
                     "harmonics": [analyse_harmonics],
                     "rate_of_speech": [get_number_sylls, get_number_words, pauses],
                     "loudness": [get_max_intensity, analyse_intensity],
                     "pitch_features":[max_jump, peak_to_valley, analyse_pitch, analyze_pitch_range, analyse_shimmer, analyse_jitter],
-                    "spectral_features":[get_envelope, spectral_slope, analyse_mfcc, mean_spectral_rollof],
+                    #removed get_envelope
+                    "spectral_features":[spectral_slope, analyse_mfcc, mean_spectral_rollof],
                     "energy":[get_energy]}
-    
-    name_dic = {"filepath":["add_filpath"],
-                    "formants": ["analyse_formants", "analyse_formants", "analyse_formants", "analyse_formants"],
-                    "ZCR": ["analyze_zero_crossing"],
-                    "harmonics": ["analyse_harmonics"],
-                    "rate_of_speech": ["get_number_sylls", "get_number_words", "pauses"],
-                    "loudness": ["get_max_intensity", "analyse_intensity"],
-                    "pitch_features":["max_jump", "peak_to_valley", "analyse_pitch", "analyze_pitch_range", "analyse_shimmer", "analyse_jitter"],
-                    "spectral_features":["get_envelope", "spectral_slope", "analyse_mfcc", "mean_spectral_rollof"],
-                    "energy":["get_energy"]}
 
     # Files are read in order of the time created
     if ".wav" in PATH:
       pathlist = [PATH]
     else :
-      pathlist = sorted(Path(PATH).glob('**/*.wav'), key=os.path.getmtime)
+      pathlist = sorted(Path(PATH).glob('**/*.wav'))
     dic = {"filepath": []}
-    for k in args.__dict__:
-      if (args.__dict__[k] == True):
+    for k in FEATURES:
+      if (FEATURES[k] == True):
         dic[k] = {}
 
-    print(dic)
     itr = 0
     store_formants = []
     if not pathlist:
@@ -97,11 +87,11 @@ if __name__ =='__main__':
     for path in pathlist:
       filename_ext = os.path.basename(os.path.normpath(path))
       filename_no_ext = filename_ext.split('.', 1)[0]
-      files.append(filename_no_ext)
-      print(filename_no_ext)
       for feature in dic:
-        if feature!= "filepath":
-          for func in function_dic[feature]: 
+        if feature== "filepath":
+          dic[feature].append(filename_no_ext)
+        else:
+          for func in function_dic[feature]:
             if feature == "formants" and itr <4:
               store_formants.append(func(itr+1, str(path)))
               itr+=1
@@ -118,23 +108,17 @@ if __name__ =='__main__':
                 dic[feature][str(func.__name__)].append(value)
               else:
                 dic[feature][str(func.__name__)] = [value]
-
-    #spectral_df = pd.DataFrame(
-    #  {'duration' : duration,
-    ##    'slope': slope,
-    #   'rolloff': roll
-    #  })
-    print(f"len of loudness {dic['loudness']['get_max_intensity']} and len of files {len(files)}")
-    loudness_df = pd.DataFrame.from_dict(dic['loudness'])
-    loudness_df['title'] = files
-    energy_df = pd.DataFrame.from_dict(dic['energy'])
-    energy_df['title'] = files
-    pitch_df = pd.DataFrame.from_dict(dic['pitch_features'])
-    pitch_df['title'] = files
-    ros_df = pd.DataFrame.from_dict(dic['rate_of_speech'])
-    ros_df['title'] = files
-    dfs = [loudness_df, energy_df, pitch_df, ros_df]
-    df_final = reduce(lambda left,right: pd.merge(left,right,on='title'), dfs)
-
-    df_final.to_csv(WRITE_PATH,index=False)
-
+    print(dic)
+    #print(f"len of loudness {dic['loudness']['get_max_intensity']} and len of files {len(files)}")
+    #loudness_df = pd.DataFrame.from_dict(dic['loudness'])
+    #loudness_df['title'] = files
+    #energy_df = pd.DataFrame.from_dict(dic['energy'])
+    #energy_df['title'] = files
+    #pitch_df = pd.DataFrame.from_dict(dic['pitch_features'])
+    #pitch_df['title'] = files
+    #ros_df = pd.DataFrame.from_dict(dic['rate_of_speech'])
+    #ros_df['title'] = files
+    #dfs = [loudness_df, energy_df, pitch_df, ros_df]
+    #df_final = reduce(lambda left,right: pd.merge(left,right,on='title'), dfs)
+#
+    #df_final.to_csv(WRITE_PATH,index=False)
