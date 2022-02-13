@@ -1,9 +1,6 @@
-from pydub import AudioSegment
 from pathlib import Path  # For writing videos into the data folder
-import pandas as pd
 import os
 import argparse
-#from spectral_functions import *
 from parsel_process import *
 from functools import partial, reduce
 
