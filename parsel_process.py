@@ -59,7 +59,6 @@ def max_jump(filepath, sample_rate=21000):
     Output:
         mean of the max jump between peak/valley to peak. 
     '''
-    print(filepath)
     sound = parselmouth.Sound(filepath).convert_to_mono()
     F0 = sound.to_pitch().selected_array['frequency']
 
@@ -154,7 +153,6 @@ def analyse_formants(f, filepath):
     Output:
         mean of the given formant (e.g., f1, f2, f3, f4)
     '''
-    print(f"extracting formant: {f}")
     sound = parselmouth.Sound(filepath).convert_to_mono()
     #pointProcess = parselmouth.praat.call(sound,"To PointProcess (periodic, cc)...", 75, 300)
     #formants = parselmouth.praat.call(sound, "To Formant (burg)", 0.0025, 5, 5000, 0.025, 50)
@@ -190,7 +188,7 @@ def analyse_mfcc(filepath, sample_rate=21000):
     '''
     x, sr = librosa.load(filepath, sr=sample_rate)
     x = librosa.to_mono(x)
-    mfcc = librosa.feature.mfcc(x, sr=sr)
+    mfcc = librosa.feature.mfcc(y=x, sr=sr)
     return np.mean(mfcc)
 
 def get_energy(filepath,sample_rate=21000):
