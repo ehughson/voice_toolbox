@@ -18,7 +18,7 @@ if __name__ =='__main__':
       help="path to the file (including '.wav extension), or folder containing the files, audio files must be in .wav format"
     )
     parser.add_argument(
-        "--writePath", type = str, default="spectral_features.csv",
+        "writePath", type = str,
         help = "file to append result to, default is a new file in the current location"
     )
     parser.add_argument(
@@ -102,13 +102,19 @@ if __name__ =='__main__':
                 else:
                   dic[feature][str(func.__name__)] = [store_formants]
                 store_formants = []
+            if str(func.__name__) == "analyse_mfcc":
+              value = func(str(path),  WRITE_PATH, SAMPLING_RATE)
+              if str(func.__name__) in dic[feature]:
+                dic[feature][str(func.__name__)].append(value)
+              else:
+                dic[feature][str(func.__name__)] = [value]
             else:
               value = func(str(path), SAMPLING_RATE)
               if str(func.__name__) in dic[feature]:
                 dic[feature][str(func.__name__)].append(value)
               else:
                 dic[feature][str(func.__name__)] = [value]
-    print(dic)
+
     #print(f"len of loudness {dic['loudness']['get_max_intensity']} and len of files {len(files)}")
     #loudness_df = pd.DataFrame.from_dict(dic['loudness'])
     #loudness_df['title'] = files

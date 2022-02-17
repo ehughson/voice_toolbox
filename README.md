@@ -9,7 +9,7 @@ The current repo is under **construction**. Goal is to create a repository that 
 
 ________________________________________________________________________________________________________________________
 The script for extracting features is parsel_process.py. 
- * **To run**: "python3 extract_features.py [sampling rate] [filepath] [output filepath] --[feature flag]"
+ * **To run**: "python3 feature_extraction.py [sampling rate] [filepath] [output filepath] --[feature flag]"
  
  > **feature flags**: formants, ZCR, harmonics, rate_of_speech, loudness, pitch_features, spectral_features, energy
 
@@ -35,9 +35,6 @@ The script for extracting features is parsel_process.py.
 * harmonics to noise (HNR)
 * Formants: f1,f2, f3, f4
 * number of zero crossings (ZCR)
-
-> #### **Todo**:
-> * add Paige's features to list
 
 ### Extra Scripts for processed features
 For visualization:

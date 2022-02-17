@@ -178,7 +178,7 @@ def analyse_formants(f, filepath):
 
     return np.mean(f_list)
 
-def analyse_mfcc(filepath, sample_rate=21000):
+def analyse_mfcc(filepath, outputpath, sample_rate=21000):
     '''
     Creates MFCC 
     Input:
@@ -189,6 +189,23 @@ def analyse_mfcc(filepath, sample_rate=21000):
     x, sr = librosa.load(filepath, sr=sample_rate)
     x = librosa.to_mono(x)
     mfcc = librosa.feature.mfcc(y=x, sr=sr)
+    filname,ext = os.path.splitext(os.path.basename(os.path.normpath(filepath)))
+
+    S = librosa.feature.melspectrogram(y=x, sr=sr, n_mels=128,
+                                   fmax=8000)
+
+    fig, ax = plt.subplots(nrows=2, sharex=True)
+    img = librosa.display.specshow(librosa.power_to_db(S, ref=np.max),
+                               x_axis='time', y_axis='mel', fmax=8000,
+                               ax=ax[0])
+    fig.colorbar(img, ax=[ax[0]])
+    ax[0].set(title='Mel spectrogram')
+    ax[0].label_outer()
+    img = librosa.display.specshow(mfcc, x_axis='time', ax=ax[1])
+    fig.colorbar(img, ax=[ax[1]])
+    ax[1].set(title='MFCC')
+
+    fig.savefig(f'{outputpath}{filname}MFCC.pdf')
     return np.mean(mfcc)
 
 def get_energy(filepath,sample_rate=21000):
