@@ -127,7 +127,7 @@ def analyse_pitch(filepath, sample_rate=21000):
     F0[F0==0] = np.nan
     return np.nanmedian(F0)
 
-def analyze_pitch_range(filepath, sample_rate=21000):
+def analyse_pitch_range(filepath, sample_rate=21000):
     '''
     Pitch is the quality of sound governed by the rate of vibrations. Degree of highness and lowness of a tone.
     F0 is the lowest point in a periodic waveform. WARNING: this may not be applicable to current dataset 
@@ -268,7 +268,7 @@ def get_max_intensity(filepath, sample_rate=21000):
     '''
     return np.max(power)
 
-def analyze_zero_crossing(filepath, sample_rate=21000):
+def analyse_zero_crossing(filepath, sample_rate=21000):
     '''
     Zero crossing tells us where the voice and unvoice speech occurs. 
     "Large number of zero crossings tells us there is no dominant low frequency oscillation"
@@ -458,7 +458,7 @@ def analyse_harmonics(filepath, sample_rate=21000):
     hnr = call(harmonicity, "Get mean", 0, 0)
     return hnr
 
-def mean_spectral_rollof(filepath, sample_rate=21000):
+def mean_spectral_rolloff(filepath, sample_rate=21000):
     '''
     The spectral roll-off , which indicates liveliness of audio signal.  
     Input:
