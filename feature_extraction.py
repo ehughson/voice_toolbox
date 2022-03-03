@@ -42,11 +42,11 @@ if __name__ =='__main__':
     )
     parser.add_argument(
       "--pitch_features", action="store_true",
-      help="extract max pitch jump, peak to valley, pitch, shimmer, jitter and pitch range"
+      help="extract pitch, shimmer, jitter and pitch range"
       )
     parser.add_argument(
       "--spectral_features", action="store_true",
-      help="extract spectral envelope, spectral slope, mfcc and mean spectral roll off"
+      help="extract spectral slope, mfcc and mean spectral roll off"
     )
     parser.add_argument(
       "--energy", action="store_true",
@@ -64,8 +64,7 @@ if __name__ =='__main__':
                     "harmonics": [analyse_harmonics],
                     "rate_of_speech": [get_number_sylls, get_number_words, pauses],
                     "loudness": [get_max_intensity, analyse_intensity],
-                    "pitch_features":[max_jump, peak_to_valley, analyse_pitch, analyse_pitch_range, analyse_shimmer, analyse_jitter],
-                    #removed get_envelope
+                    "pitch_features":[analyse_pitch, analyse_pitch_range, analyse_shimmer, analyse_jitter],
                     "spectral_features":[spectral_slope, analyse_mfcc, mean_spectral_rolloff],
                     "energy":[get_energy]}
 
