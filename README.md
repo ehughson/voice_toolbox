@@ -20,8 +20,6 @@ The script for extracting features is parsel_process.py.
 * spectral slope
 * mel-frequency cepstral coefficients (MFCC)
 * mean spectral roll-off
-* max jump (jump in pitch)
-* peak to valley (mean distance between pitch peak and pitch valley)
 * median F0 (fundamental frequency)
 
 2. *Rate of Speech* and *loudness*:
@@ -47,9 +45,6 @@ For PCA analysis of voice data:
  voice_pca.py is for PCA, RFE and Correlation plot:
 * - To run: 'voice_pca.py'
 
-
-> #### **Todo**:
-> * add/integrate Paige's shout detection
 ________________________________________________________________________________________________________________________
 
 
