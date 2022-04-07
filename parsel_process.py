@@ -48,7 +48,7 @@ def analyse_pitch_range(filepath, sample_rate=21000):
     Input:
         row of dataset
     Output:
-        median of the fundamental frequency found  
+        range of the fundamental frequency found  
     '''
     sound = parselmouth.Sound(filepath).convert_to_mono()
     F0 = sound.to_pitch().selected_array['frequency']
