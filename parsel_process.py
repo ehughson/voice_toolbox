@@ -387,8 +387,8 @@ def mean_spectral_rolloff(filepath, sample_rate=21000):
 
 def pauses(filepath, sample_rate=21000):
     '''
-    Pause rate which is an indicate of rate of speech. Calculated by dividing the duration by 
-    the total number of pauses.
+    Pause rate which is an indicate of rate of speech. Calculated by dividing the total number of pauses by 
+    duration.
     Input:
         row of dataset
     Output:
