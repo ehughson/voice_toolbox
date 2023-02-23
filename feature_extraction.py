@@ -2,7 +2,7 @@ from pathlib import Path  # For writing videos into the data folder
 import os
 import argparse
 from parsel_process import *
-from functools import partial, reduce
+import pandas as pd
 
 def add_filpath(filepath):
   return filepath

@@ -5,19 +5,14 @@ import librosa.display
 
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
 import os.path
 
 import speech_recognition as sr
 import syllables
-import soundfile as sf
 
 from scipy import signal
-from scipy.io import wavfile
-from scipy.signal import find_peaks
-from scipy.signal import argrelextrema
 from pydub import AudioSegment
-from pydub.silence import split_on_silence
+from pydub.silence import detect_silence
 
 
 
@@ -387,8 +382,7 @@ def mean_spectral_rolloff(filepath, sample_rate=21000):
 
 def pauses(filepath, sample_rate=21000):
     '''
-    Pause rate which is an indicate of rate of speech. Calculated by dividing the total number of pauses by 
-    duration.
+    Average pause length in seconds which is an indicant of rate of speech.
     Input:
         row of dataset
     Output:
@@ -396,9 +390,9 @@ def pauses(filepath, sample_rate=21000):
     '''
     #reference:https://www.geeksforgeeks.org/python-speech-recognition-on-large-audio-files/
     file = AudioSegment.from_wav(filepath)
-    chunks = split_on_silence(file,
-        min_silence_len = 50,
-        silence_thresh = -45
+    chunks = detect_silence(file,
+        min_silence_len = 100,
+        silence_thresh = -30
     )
     y, s = librosa.load(filepath, sr=sample_rate)
     y = librosa.to_mono(y)
@@ -406,13 +400,19 @@ def pauses(filepath, sample_rate=21000):
     if t == 0:
         return "NA"
     try:
-        pause_length=len(chunks)/t
+        pause_lengths = []
+        for pause in chunks:
+          pause_lengths.append(pause[1] - pause[0])
+          pause_length=sum(pause_lengths)/len(pause_lengths)*0.001
     except:
-        chunks = split_on_silence(file,
-        min_silence_len = 500,
+        chunks = detect_silence(file,
+        min_silence_len = 50,
         silence_thresh = -50
         )
-        pause_length=len(chunks)/t
+        pause_lengths = []
+        for pause in chunks:
+          pause_lengths.append(pause[1] - pause[0])
+          pause_length=sum(pause_lengths)/len(pause_lengths)*0.001
 
     return pause_length
 
