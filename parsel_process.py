@@ -382,32 +382,34 @@ def mean_spectral_rolloff(filepath, sample_rate=21000):
 
 def pauses(filepath, sample_rate=21000):
     '''
-    Average pause length in seconds which is an indicant of rate of speech.
+    Average pause length in seconds which is an indicant of rate of speech. This detects silences an as such
+    is sensitive to background noise.
     Input:
         row of dataset
     Output:
         pause rate
     '''
-    #reference:https://www.geeksforgeeks.org/python-speech-recognition-on-large-audio-files/
     file = AudioSegment.from_wav(filepath)
     chunks = detect_silence(file,
-        min_silence_len = 100,
+        min_silence_len = 50,
         silence_thresh = -30
     )
     y, s = librosa.load(filepath, sr=sample_rate)
     y = librosa.to_mono(y)
-    t =librosa.get_duration(y=y, sr=s)
+    t =round(librosa.get_duration(y=y, sr=s)*1000, 0)
     if t == 0:
         return "NA"
     try:
         pause_lengths = []
         for pause in chunks:
+          if pause[0] == 0 or pause[1] == t:
+            continue
           pause_lengths.append(pause[1] - pause[0])
           pause_length=sum(pause_lengths)/len(pause_lengths)*0.001
     except:
         chunks = detect_silence(file,
-        min_silence_len = 50,
-        silence_thresh = -50
+        min_silence_len = 20,
+        silence_thresh = -30
         )
         pause_lengths = []
         for pause in chunks:
