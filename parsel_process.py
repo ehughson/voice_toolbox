@@ -399,6 +399,7 @@ def pauses(filepath, sample_rate=21000):
     t =round(librosa.get_duration(y=y, sr=s)*1000, 0)
     if t == 0:
         return "NA"
+    pause_length = 0
     try:
         pause_lengths = []
         for pause in chunks:
